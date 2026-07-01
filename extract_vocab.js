@@ -1,8 +1,7 @@
-// Script to extract vocabulary data from toeicIndex.html
-const fs = require('fs');
+// Script to extract vocabulary data from index.html
 
-// Read the toeicIndex.html file
-const htmlContent = fs.readFileSync('toeicIndex.html', 'utf8');
+// Read the index.html file
+const htmlContent = fs.readFileSync('index.html', 'utf8');
 
 // Extract the JavaScript part that contains the toeflVocabData
 const scriptMatch = htmlContent.match(/const toeflVocabData = \{[\s\S]*?\};\s*\n\s*\n/);
