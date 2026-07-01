@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试托业词汇导入</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .word-sample {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        .word-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .word-details {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .word-tags {
+            margin-top: 5px;
+        }
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 测试托业词汇导入功能</h1>
+        
+        <div class="test-section">
+            <h3>测试1: 检查TOEIC词汇数据</h3>
+            <p>检查 toeic-words.js 是否正确加载，以及数据格式是否正确。</p>
+            <button class="btn" onclick="testTOEICData()">检查词汇数据</button>
+            <div id="test1-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试2: 检查本地存储</h3>
+            <p>检查当前本地存储中的卡片数据。</p>
+            <button class="btn" onclick="testLocalStorage()">检查本地存储</button>
+            <div id="test2-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试3: 模拟导入过程</h3>
+            <p>模拟将TOEIC词汇导入到卡片系统的过程。</p>
+            <button class="btn" onclick="simulateImport()">模拟导入</button>
+            <div id="test3-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>快速操作</h3>
+            <button class="btn" onclick="clearLocalStorage()">清空本地存储</button>
+            <button class="btn" onclick="window.location.href='cards.html'">前往卡片管理</button>
+            <button class="btn" onclick="window.location.href='reset-cards.html'">重置并导入</button>
+        </div>
+    </div>
+
+    <script src="toeic-words.js"></script>
+    <script>
+        function testTOEICData() {
+            const resultDiv = document.getElementById('test1-result');
+            
+            if (typeof TOEIC_BASIC_WORDS === 'undefined') {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ TOEIC词汇数据未加载';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            const totalWords = TOEIC_BASIC_WORDS.length;
+            const firstWord = TOEIC_BASIC_WORDS[0];
+            const lastWord = TOEIC_BASIC_WORDS[totalWords - 1];
+            
+            let html = `
+                <h4>✅ TOEIC词汇数据已正确加载</h4>
+                <p><strong>总词汇数量:</strong> ${totalWords} 个</p>
+                <div class="word-sample">
+                    <div class="word-title">第一个词汇: ${firstWord.front}</div>
+                    <div class="word-details">${firstWord.back}</div>
+                    <div class="word-tags">${firstWord.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                </div>
+                <div class="word-sample">
+                    <div class="word-title">最后一个词汇: ${lastWord.front}</div>
+                    <div class="word-details">${lastWord.back}</div>
+                    <div class="word-tags">${lastWord.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                </div>
+            `;
+            
+            resultDiv.innerHTML = html;
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+        }
+
+        function testLocalStorage() {
+            const resultDiv = document.getElementById('test2-result');
+            const storageKey = 'toeic_memorization_data';
+            const data = localStorage.getItem(storageKey);
+            
+            if (!data) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ 本地存储中没有找到卡片数据';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const parsedData = JSON.parse(data);
+                const cardCount = parsedData.cards ? parsedData.cards.length : 0;
+                
+                let html = `
+                    <h4>✅ 本地存储数据正常</h4>
+                    <p><strong>卡片总数:</strong> ${cardCount} 张</p>
+                    <p><strong>设置信息:</strong> 每日新卡片 ${parsedData.settings?.dailyNewCards || '未设置'}</p>
+                    <p><strong>统计信息:</strong> 连续学习 ${parsedData.statistics?.streakDays || 0} 天</p>
+                `;
+                
+                if (cardCount > 0) {
+                    const sampleCard = parsedData.cards[0];
+                    html += `
+                        <div class="word-sample">
+                            <div class="word-title">示例卡片: ${sampleCard.front}</div>
+                            <div class="word-details">${sampleCard.back}</div>
+                            <div class="word-tags">${sampleCard.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.innerHTML = html;
+                resultDiv.className = 'result';
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ 本地存储数据格式错误: ${error.message}`;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        function simulateImport() {
+            const resultDiv = document.getElementById('test3-result');
+            
+            if (typeof TOEIC_BASIC_WORDS === 'undefined') {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ 需要先加载TOEIC词汇数据';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            // 模拟导入过程
+            const storageKey = 'toeic_memorization_data';
+            let existingData = localStorage.getItem(storageKey);
+            let data;
+            
+            if (existingData) {
+                data = JSON.parse(existingData);
+            } else {
+                data = {
+                    cards: [],
+                    studyRecords: {},
+                    settings: { dailyNewCards: 20, studyMode: 'random' },
+                    statistics: { totalStudyTime: 0, streakDays: 0, lastStudyDate: null }
+                };
+            }
+
+            const existingWords = new Set(data.cards.map(card => card.front.toLowerCase()));
+            let importedCount = 0;
+            let skippedCount = 0;
+
+            // 模拟导入前50个词汇（避免测试时导入全部540个）
+            const testWords = TOEIC_BASIC_WORDS.slice(0, 50);
+            
+            testWords.forEach(word => {
+                if (!existingWords.has(word.front.toLowerCase())) {
+                    data.cards.push({
+                        ...word,
+                        createdAt: new Date().toISOString()
+                    });
+                    importedCount++;
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            let html = `
+                <h4>📊 模拟导入结果</h4>
+                <p><strong>测试词汇数量:</strong> ${testWords.length} 个</p>
+                <p><strong>成功导入:</strong> ${importedCount} 个</p>
+                <p><strong>跳过重复:</strong> ${skippedCount} 个</p>
+                <p><strong>预计总导入:</strong> 如果导入全部540个词汇，预计需要 ${Math.ceil(540/50)} 倍时间</p>
+            `;
+            
+            resultDiv.innerHTML = html;
+            resultDiv.className = 'result';
+            resultDiv.style.display = 'block';
+        }
+
+        function clearLocalStorage() {
+            if (confirm('确定要清空所有本地存储数据吗？这将删除所有卡片和学习进度。')) {
+                localStorage.clear();
+                alert('✅ 本地存储已清空');
+                // 刷新结果显示
+                document.querySelectorAll('.result').forEach(div => div.style.display = 'none');
+            }
+        }
+    </script>
+</body>
+</html>

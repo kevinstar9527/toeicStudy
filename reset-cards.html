@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重置卡片数据</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 重置卡片数据</h1>
+        <p>点击下面的按钮来重置您的卡片数据，这将清除现有的所有卡片并重新加载完整的托业词汇库（540个单词）。</p>
+        
+        <div class="warning">
+            <strong>⚠️ 注意：</strong> 此操作将清除您当前的所有学习进度和自定义卡片。
+        </div>
+        
+        <button class="btn" onclick="resetCards()">重置并导入托业词汇</button>
+        <button class="btn" onclick="viewCurrentCards()">查看当前卡片</button>
+        <button class="btn" onclick="window.location.href='index.html'">返回主页</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script src="toeic-words.js"></script>
+    <script>
+        function resetCards() {
+            if (confirm('确定要重置所有卡片数据吗？这将清除您当前的学习进度。')) {
+                // 清除现有的localStorage数据
+                localStorage.removeItem('toeic_memorization_data');
+                
+                // 创建新的数据结构
+                const newData = {
+                    cards: [],
+                    studyRecords: {},
+                    settings: {
+                        dailyNewCards: 20,
+                        studyMode: 'random'
+                    },
+                    statistics: {
+                        totalStudyTime: 0,
+                        streakDays: 0,
+                        lastStudyDate: null
+                    }
+                };
+                
+                // 添加所有540个托业词汇
+                if (typeof TOEIC_BASIC_WORDS !== 'undefined') {
+                    newData.cards = TOEIC_BASIC_WORDS.map(word => ({
+                        ...word,
+                        createdAt: new Date().toISOString()
+                    }));
+                } else {
+                    // 备用数据（如果toeic-words.js未加载）
+                    newData.cards = [
+                        { id: 1, front: 'notice', back: '/ˈnəʊtɪs/ n. 公告，注意，通知', tags: ['托业基础', '托业基础课程01', '高频词汇'], mastery: 0, nextReview: null, reviewCount: 0, createdAt: new Date().toISOString() },
+                        { id: 2, front: 'attend', back: '/əˈtend/ v. 参加，出席', tags: ['托业基础', '托业基础课程01', '高频词汇'], mastery: 0, nextReview: null, reviewCount: 0, createdAt: new Date().toISOString() }
+                    ];
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem('toeic_memorization_data', JSON.stringify(newData));
+                
+                // 显示结果
+                showStatus(`✅ 重置成功！已导入 ${newData.cards.length} 个托业词汇。`);
+                
+                // 3秒后跳转到卡片管理页面
+                setTimeout(() => {
+                    window.location.href = 'cards.html';
+                }, 3000);
+            }
+        }
+        
+        function viewCurrentCards() {
+            const data = localStorage.getItem('toeic_memorization_data');
+            if (data) {
+                const parsedData = JSON.parse(data);
+                showStatus(`📊 当前共有 ${parsedData.cards.length} 张卡片。`);
+            } else {
+                showStatus('❌ 当前没有卡片数据。');
+            }
+        }
+        
+        function showStatus(message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

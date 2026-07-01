@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡片管理 - 托业背单词</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .cards-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-item.mastered {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .card-item.learning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .card-item.new {
+            border-left-color: #6c757d;
+            background: #f8f9fa;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .card-front {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .card-back {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .mastery-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mastery-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .mastery-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e0e0e0;
+        }
+
+        .mastery-dot.filled {
+            background: #28a745;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 50px auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .close {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .bulk-actions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .bulk-actions.show {
+            display: block;
+        }
+
+        .selected-count {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .card-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 卡片管理</h1>
+            <div class="controls">
+                <input type="text" class="search-box" id="searchBox" placeholder="搜索卡片正面内容...">
+                <select class="filter-select" id="tagFilter">
+                    <option value="">所有标签</option>
+                </select>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">所有状态</option>
+                    <option value="new">新卡片</option>
+                    <option value="learning">学习中</option>
+                    <option value="mastered">已掌握</option>
+                </select>
+                <button class="btn btn-primary" onclick="showCreateModal()">➕ 新建卡片</button>
+                <button class="btn btn-secondary" onclick="importTOEICWords()">📚 导入托业词汇</button>
+                <button class="btn btn-secondary" onclick="importCards()">📥 批量导入</button>
+                <button class="btn btn-secondary" onclick="exportCards()">📤 导出数据</button>
+            </div>
+        </div>
+
+        <div class="bulk-actions" id="bulkActions">
+            <div class="selected-count" id="selectedCount">已选择 0 张卡片</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary btn-small" onclick="bulkAddTag()">添加标签</button>
+                <button class="btn btn-secondary btn-small" onclick="bulkRemoveTag()">移除标签</button>
+                <button class="btn btn-danger btn-small" onclick="bulkDelete()">批量删除</button>
+                <button class="btn btn-secondary btn-small" onclick="clearSelection()">取消选择</button>
+            </div>
+        </div>
+
+        <div class="cards-container">
+            <div id="cardsList"></div>
+        </div>
+    </div>
+
+    <!-- 创建/编辑卡片模态框 -->
+    <div class="modal" id="cardModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">新建卡片</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="cardForm">
+                <div class="form-group">
+                    <label class="form-label">正面内容</label>
+                    <textarea class="form-control form-textarea" id="cardFront" required placeholder="输入要背诵的内容，如英文单词..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">背面内容</label>
+                    <textarea class="form-control form-textarea" id="cardBack" required placeholder="输入对应的答案或解释..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签（用逗号分隔）</label>
+                    <input type="text" class="form-control" id="cardTags" placeholder="如：托业基础, 高频词汇">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 批量导入模态框 -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">批量导入卡片</h2>
+                <span class="close" onclick="closeImportModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">导入格式说明</label>
+                <p style="color: #666; margin-bottom: 15px;">每行一个卡片，格式：正面|背面 或 正面,背面</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">卡片数据</label>
+                <textarea class="form-control form-textarea" id="importData" rows="10" placeholder="例如：&#10;abandon|放弃，抛弃&#10;ability|能力，才能&#10;able|能够的，有能力的"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">默认标签</label>
+                <input type="text" class="form-control" id="importTags" placeholder="为导入的卡片添加标签">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeImportModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="processImport()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据管理器（复用主页面的）
+        class DataManager {
+            constructor() {
+                this.storageKey = 'toeic_memorization_data';
+            }
+
+            getData() {
+                return JSON.parse(localStorage.getItem(this.storageKey));
+            }
+
+            saveData(data) {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
+
+            getAllTags() {
+                const data = this.getData();
+                const tags = new Set();
+                data.cards.forEach(card => {
+                    card.tags.forEach(tag => tags.add(tag));
+                });
+                return Array.from(tags).sort();
+            }
+
+            addCard(card) {
+                const data = this.getData();
+                const newCard = {
+                    id: Date.now(),
+                    front: card.front,
+                    back: card.back,
+                    tags: card.tags,
+                    mastery: 0,
+                    nextReview: null,
+                    reviewCount: 0,
+                    createdAt: new Date().toISOString()
+                };
+                data.cards.push(newCard);
+                this.saveData(data);
+                return newCard;
+            }
+
+            updateCard(cardId, updates) {
+                const data = this.getData();
+                const cardIndex = data.cards.findIndex(card => card.id === cardId);
+                if (cardIndex !== -1) {
+                    data.cards[cardIndex] = { ...data.cards[cardIndex], ...updates };
+                    this.saveData(data);
+                    return data.cards[cardIndex];
+                }
+                return null;
+            }
+
+            deleteCard(cardId) {
+                const data = this.getData();
+                const cardIndex = data.cards.findIndex(card => card.id === cardId);
+                if (cardIndex !== -1) {
+                    data.cards.splice(cardIndex, 1);
+                    this.saveData(data);
+                    return true;
+                }
+                return false;
+            }
+
+            bulkDelete(cardIds) {
+                const data = this.getData();
+                data.cards = data.cards.filter(card => !cardIds.includes(card.id));
+                this.saveData(data);
+            }
+
+            bulkAddTag(cardIds, tag) {
+                const data = this.getData();
+                data.cards.forEach(card => {
+                    if (cardIds.includes(card.id) && !card.tags.includes(tag)) {
+                        card.tags.push(tag);
+                    }
+                });
+                this.saveData(data);
+            }
+
+            bulkRemoveTag(cardIds, tag) {
+                const data = this.getData();
+                data.cards.forEach(card => {
+                    if (cardIds.includes(card.id)) {
+                        card.tags = card.tags.filter(t => t !== tag);
+                    }
+                });
+                this.saveData(data);
+            }
+        }
+
+        // 全局变量
+        const dataManager = new DataManager();
+        let selectedCards = new Set();
+        let editingCard = null;
+        let filteredCards = [];
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCards();
+            setupEventListeners();
+            updateTagFilter();
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            document.getElementById('searchBox').addEventListener('input', filterCards);
+            document.getElementById('tagFilter').addEventListener('change', filterCards);
+            document.getElementById('statusFilter').addEventListener('change', filterCards);
+            document.getElementById('cardForm').addEventListener('submit', saveCard);
+        }
+
+        // 加载卡片列表
+        function loadCards() {
+            const data = dataManager.getData();
+            filteredCards = [...data.cards];
+            renderCards();
+        }
+
+        // 渲染卡片列表
+        function renderCards() {
+            const container = document.getElementById('cardsList');
+            
+            if (filteredCards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <h3>暂无卡片</h3>
+                        <p>点击上方"新建卡片"按钮创建您的第一张卡片</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const cardsHtml = filteredCards.map(card => {
+                const status = getCardStatus(card);
+                const statusClass = status === '已掌握' ? 'mastered' : status === '学习中' ? 'learning' : 'new';
+                const isSelected = selectedCards.has(card.id);
+                
+                return `
+                    <div class="card-item ${statusClass}" onclick="toggleCardSelection(${card.id})" data-card-id="${card.id}">
+                        <div class="card-header">
+                            <div class="card-front">${escapeHtml(card.front)}</div>
+                            <div class="card-actions" onclick="event.stopPropagation()">
+                                <button class="btn btn-primary btn-small" onclick="editCard(${card.id})">编辑</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteCard(${card.id})">删除</button>
+                            </div>
+                        </div>
+                        <div class="card-back">${escapeHtml(card.back)}</div>
+                        <div class="card-meta">
+                            <div class="card-tags">
+                                ${card.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                            </div>
+                            <div class="mastery-indicator">
+                                <span>${status}</span>
+                                <div class="mastery-dots">
+                                    ${Array.from({length: 3}, (_, i) => 
+                                        `<div class="mastery-dot ${i < card.mastery ? 'filled' : ''}"></div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = cardsHtml;
+            updateBulkActions();
+        }
+
+        // 获取卡片状态
+        function getCardStatus(card) {
+            if (card.mastery >= 3) return '已掌握';
+            if (card.mastery > 0) return '学习中';
+            return '新卡片';
+        }
+
+        // 切换卡片选择
+        function toggleCardSelection(cardId) {
+            if (selectedCards.has(cardId)) {
+                selectedCards.delete(cardId);
+            } else {
+                selectedCards.add(cardId);
+            }
+            updateCardSelectionUI();
+        }
+
+        // 更新卡片选择UI
+        function updateCardSelectionUI() {
+            document.querySelectorAll('.card-item').forEach(item => {
+                const cardId = parseInt(item.dataset.cardId);
+                if (selectedCards.has(cardId)) {
+                    item.style.background = '#e3f2fd';
+                    item.style.borderLeftWidth = '6px';
+                } else {
+                    item.style.background = '';
+                    item.style.borderLeftWidth = '';
+                }
+            });
+        }
+
+        // 更新批量操作面板
+        function updateBulkActions() {
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedCards.size > 0) {
+                bulkActions.classList.add('show');
+                selectedCount.textContent = `已选择 ${selectedCards.size} 张卡片`;
+            } else {
+                bulkActions.classList.remove('show');
+            }
+        }
+
+        // 清除选择
+        function clearSelection() {
+            selectedCards.clear();
+            updateCardSelectionUI();
+            updateBulkActions();
+        }
+
+        // 筛选卡片
+        function filterCards() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const tagFilter = document.getElementById('tagFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const data = dataManager.getData();
+            filteredCards = data.cards.filter(card => {
+                const matchesSearch = !searchTerm || card.front.toLowerCase().includes(searchTerm) || card.back.toLowerCase().includes(searchTerm);
+                const matchesTag = !tagFilter || card.tags.includes(tagFilter);
+                const matchesStatus = !statusFilter || getCardStatus(card) === statusFilter;
+                
+                return matchesSearch && matchesTag && matchesStatus;
+            });
+
+            renderCards();
+        }
+
+        // 更新标签筛选器
+        function updateTagFilter() {
+            const tags = dataManager.getAllTags();
+            const tagFilter = document.getElementById('tagFilter');
+            
+            tagFilter.innerHTML = '<option value="">所有标签</option>';
+            tags.forEach(tag => {
+                tagFilter.innerHTML += `<option value="${escapeHtml(tag)}">${escapeHtml(tag)}</option>`;
+            });
+        }
+
+        // 显示创建模态框
+        function showCreateModal() {
+            editingCard = null;
+            document.getElementById('modalTitle').textContent = '新建卡片';
+            document.getElementById('cardForm').reset();
+            document.getElementById('cardModal').style.display = 'block';
+        }
+
+        // 编辑卡片
+        function editCard(cardId) {
+            const data = dataManager.getData();
+            const card = data.cards.find(c => c.id === cardId);
+            
+            if (card) {
+                editingCard = card;
+                document.getElementById('modalTitle').textContent = '编辑卡片';
+                document.getElementById('cardFront').value = card.front;
+                document.getElementById('cardBack').value = card.back;
+                document.getElementById('cardTags').value = card.tags.join(', ');
+                document.getElementById('cardModal').style.display = 'block';
+            }
+        }
+
+        // 保存卡片
+        function saveCard(e) {
+            e.preventDefault();
+            
+            const front = document.getElementById('cardFront').value.trim();
+            const back = document.getElementById('cardBack').value.trim();
+            const tagsText = document.getElementById('cardTags').value.trim();
+            const tags = tagsText ? tagsText.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            if (!front || !back) {
+                alert('请填写正面和背面内容');
+                return;
+            }
+
+            const cardData = { front, back, tags };
+
+            if (editingCard) {
+                dataManager.updateCard(editingCard.id, cardData);
+            } else {
+                dataManager.addCard(cardData);
+            }
+
+            closeModal();
+            loadCards();
+            updateTagFilter();
+        }
+
+        // 删除卡片
+        function deleteCard(cardId) {
+            if (confirm('确定要删除这张卡片吗？')) {
+                dataManager.deleteCard(cardId);
+                loadCards();
+                updateTagFilter();
+            }
+        }
+
+        // 批量删除
+        function bulkDelete() {
+            if (selectedCards.size === 0) return;
+            
+            if (confirm(`确定要删除选中的 ${selectedCards.size} 张卡片吗？`)) {
+                dataManager.bulkDelete(Array.from(selectedCards));
+                selectedCards.clear();
+                loadCards();
+                updateTagFilter();
+            }
+        }
+
+        // 批量添加标签
+        function bulkAddTag() {
+            const tag = prompt('请输入要添加的标签：');
+            if (tag && selectedCards.size > 0) {
+                dataManager.bulkAddTag(Array.from(selectedCards), tag);
+                selectedCards.clear();
+                loadCards();
+                updateTagFilter();
+            }
+        }
+
+        // 批量移除标签
+        function bulkRemoveTag() {
+            const tag = prompt('请输入要移除的标签：');
+            if (tag && selectedCards.size > 0) {
+                dataManager.bulkRemoveTag(Array.from(selectedCards), tag);
+                selectedCards.clear();
+                loadCards();
+                updateTagFilter();
+            }
+        }
+
+        // 导入卡片
+        function importCards() {
+            document.getElementById('importModal').style.display = 'block';
+        }
+
+        // 导入托业词汇
+        function importTOEICWords() {
+            if (confirm('确定要导入540个托业基础词汇吗？这将添加大量新卡片到您的学习库中。')) {
+                // 加载 toeic-words.js
+                const script = document.createElement('script');
+                script.src = 'toeic-words.js';
+                script.onload = function() {
+                    if (typeof TOEIC_BASIC_WORDS !== 'undefined') {
+                        importTOEICWordsData();
+                    } else {
+                        alert('无法加载托业词汇数据文件');
+                    }
+                };
+                script.onerror = function() {
+                    alert('加载托业词汇数据文件失败');
+                };
+                document.head.appendChild(script);
+            }
+        }
+
+        // 处理托业词汇导入
+        function importTOEICWordsData() {
+            if (typeof TOEIC_BASIC_WORDS === 'undefined') {
+                alert('托业词汇数据未加载');
+                return;
+            }
+
+            const data = dataManager.getData();
+            const existingWords = new Set(data.cards.map(card => card.front.toLowerCase()));
+            let importedCount = 0;
+            let skippedCount = 0;
+
+            TOEIC_BASIC_WORDS.forEach(word => {
+                // 检查是否已存在相同单词（不区分大小写）
+                if (!existingWords.has(word.front.toLowerCase())) {
+                    // 添加创建时间
+                    const newCard = {
+                        ...word,
+                        createdAt: new Date().toISOString()
+                    };
+                    data.cards.push(newCard);
+                    importedCount++;
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            // 保存数据
+            dataManager.saveData(data);
+            
+            // 显示结果
+            let message = `✅ 导入完成！\n`;
+            message += `📚 成功导入：${importedCount} 个新词汇\n`;
+            if (skippedCount > 0) {
+                message += `⏭️ 跳过重复：${skippedCount} 个词汇\n`;
+            }
+            message += `📊 总计卡片：${data.cards.length} 张`;
+            
+            alert(message);
+            
+            // 刷新页面显示新卡片
+            location.reload();
+        }
+
+        // 处理导入
+        function processImport() {
+            const importData = document.getElementById('importData').value.trim();
+            const importTags = document.getElementById('importTags').value.trim();
+            
+            if (!importData) {
+                alert('请输入要导入的数据');
+                return;
+            }
+
+            const lines = importData.split('\n');
+            const defaultTags = importTags ? importTags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            let successCount = 0;
+            let errorCount = 0;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+
+                let parts;
+                if (trimmedLine.includes('|')) {
+                    parts = trimmedLine.split('|');
+                } else if (trimmedLine.includes(',')) {
+                    parts = trimmedLine.split(',');
+                } else {
+                    errorCount++;
+                    return;
+                }
+
+                if (parts.length >= 2) {
+                    const front = parts[0].trim();
+                    const back = parts.slice(1).join(',').trim();
+                    
+                    if (front && back) {
+                        const tags = [...defaultTags];
+                        dataManager.addCard({ front, back, tags });
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } else {
+                    errorCount++;
+                }
+            });
+
+            alert(`导入完成！成功：${successCount} 张，失败：${errorCount} 张`);
+            closeImportModal();
+            loadCards();
+            updateTagFilter();
+        }
+
+        // 导出卡片
+        function exportCards() {
+            const data = dataManager.getData();
+            const exportText = data.cards.map(card => `${card.front}|${card.back}`).join('\n');
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `托业背单词_${new Date().toLocaleDateString('zh-CN')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('cardModal').style.display = 'none';
+            editingCard = null;
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+            document.getElementById('importData').value = '';
+            document.getElementById('importTags').value = '';
+        }
+
+        // 工具函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

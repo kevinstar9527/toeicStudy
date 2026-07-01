@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开始背诵 - 托业背单词</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .search-popover {
+            position: absolute;
+            background: transparent;
+            z-index: 10000;
+            display: none;
+        }
+        
+        .search-popover-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 120px;
+            overflow: hidden;
+        }
+        
+        .search-popover-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        
+        .search-popover-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-popover-close:hover {
+            background-color: #e9ecef;
+        }
+        
+        .search-popover-options {
+            padding: 8px 0;
+        }
+        
+        .search-popover-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+        }
+        
+        .search-popover-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-popover-option:last-child {
+            border-bottom: none;
+        }
+        
+        .doubao-home-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .doubao-home-modal.active {
+            display: flex;
+            animation: doubaoHomeModalFadeIn 0.3s ease;
+        }
+        
+        @keyframes doubaoHomeModalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .doubao-home-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            max-height: 800px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .doubao-home-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .doubao-home-modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .doubao-home-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+        
+        .doubao-home-modal-close:hover {
+            background-color: #e9ecef;
+        }
+        
+        .doubao-home-modal-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .doubao-home-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 搜索模态框样式 */
+        .doubao-search-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .doubao-search-modal.active {
+            display: flex;
+            animation: doubaoSearchModalFadeIn 0.3s ease;
+        }
+        
+        @keyframes doubaoSearchModalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .doubao-search-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            height: 70%;
+            max-height: 700px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .doubao-search-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .doubao-search-modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .doubao-search-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .doubao-search-status {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .doubao-search-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .doubao-search-modal-close:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .doubao-search-modal-body {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .doubao-search-initial {
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .doubao-search-selected-text {
+            margin-bottom: 20px;
+        }
+        
+        .doubao-search-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        
+        .doubao-search-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .doubao-search-auto-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .doubao-search-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .doubao-search-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .doubao-search-btn-confirm {
+            background: #007bff;
+            color: white;
+        }
+        
+        .doubao-search-btn-confirm:hover {
+            background: #0056b3;
+        }
+        
+        .doubao-search-btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .doubao-search-btn-cancel:hover {
+            background: #545b62;
+        }
+        
+        .doubao-search-frame-container {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .doubao-search-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0 0 12px 12px;
+        }
+
+
+        .progress-section {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .progress-item {
+            text-align: center;
+        }
+
+        .progress-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .card-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: all 0.6s ease;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .card-front {
+            z-index: 2;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            z-index: 1;
+        }
+
+        .card-content {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        .card-back-content {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+
+        /* .flashcard.flipped .card-content{
+            font-size: 1rem!important;
+        } */
+
+        .card-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .card-tags {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        .card-tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .answer-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-show-answer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-show-answer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .difficulty-buttons {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .difficulty-buttons.show {
+            display: grid;
+        }
+
+        .btn-difficulty {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-forgot {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-forgot:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-hard {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-hard:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .btn-good {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-good:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-action:hover {
+            background: #5a6268;
+        }
+
+        .study-complete {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .study-complete.show {
+            display: block;
+        }
+
+        .complete-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+
+        .complete-title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .complete-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .complete-stat {
+            text-align: center;
+        }
+
+        .complete-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .complete-label {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .complete-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .settings-panel {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-panel.show {
+            display: block;
+        }
+
+        .setting-group {
+            margin-bottom: 15px;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .setting-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .progress-stats {
+                gap: 15px;
+            }
+            
+            .card-content {
+                font-size: 1.5rem;
+            }
+            
+            .difficulty-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .complete-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 开始背诵</h1>
+            <div class="header-controls">
+            <!-- 豆包首页按钮 -->
+            <button class="btn-header" id="doubaoHomeBtn" onclick="showDoubaoHomeModal()" title="打开豆包AI">🤖 豆包</button>
+            <button class="btn-header" onclick="toggleSettings()">⚙️ 设置</button>
+            <button class="btn-header" onclick="pauseStudy()">⏸️ 暂停</button>
+            <button class="btn-header" onclick="exitStudy()">❌ 退出</button>
+        </div>
+        </div>
+        
+        <!-- 搜索popover -->
+        <div id="searchPopover" class="search-popover" style="display: none;">
+            <div class="search-popover-content">
+                <div class="search-popover-header">
+                    <span>🔍 搜索选项</span>
+                    <button class="search-popover-close" onclick="hideSearchPopover()">×</button>
+                </div>
+                <div class="search-popover-options">
+                    <div class="search-popover-option" onclick="searchWordFromPopover('bing')">🖼️ Bing词典</div>
+                    <div class="search-popover-option" onclick="searchWordFromPopover('youdao')">📖 有道词典</div>
+                    <div class="search-popover-option" onclick="searchWordFromPopover('sougou')">📑 搜狗翻译</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 豆包首页modal -->
+        <div id="doubaoHomeModal" class="doubao-home-modal">
+            <div class="doubao-home-modal-content">
+                <div class="doubao-home-modal-header">
+                    <div class="doubao-home-modal-title">
+                        <span>🤖 豆包AI</span>
+                    </div>
+                    <button id="closeDoubaoHomeModal" class="doubao-home-modal-close">×</button>
+                </div>
+                <div class="doubao-home-modal-body">
+                    <iframe id="doubaoHomeFrame" class="doubao-home-frame" 
+                            src="https://www.doubao.com"
+                            allow="microphone"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bing搜索modal -->
+        <div id="bingSearchModal" class="doubao-search-modal">
+            <div class="doubao-search-modal-content">
+                <div class="doubao-search-modal-header">
+                    <div class="doubao-search-modal-title">
+                        <span class="doubao-icon">🖼️</span>
+                        Bing词典
+                    </div>
+                    <div class="doubao-search-controls">
+                        <span id="bingSearchStatus" class="doubao-search-status"></span>
+                        <button id="closeBingSearchModal" class="doubao-search-modal-close">×</button>
+                    </div>
+                </div>
+                <div class="doubao-search-modal-body">
+                    <div id="bingSearchInitial" class="doubao-search-initial">
+                        <div class="doubao-search-selected-text">
+                            <div class="doubao-search-label">搜索关键词：</div>
+                            <div id="bingSelectedText" class="doubao-search-text"></div>
+                        </div>
+                        <div class="doubao-search-auto-text">
+                            <div style="text-align: center; color: #4f46e5; font-weight: 500; margin-bottom: 10px;">
+                                🖼️ 正在自动搜索中...
+                            </div>
+                            <div style="text-align: center; color: #6b7280; font-size: 0.9rem;">
+                                或者点击按钮手动开始搜索
+                            </div>
+                        </div>
+                        <div class="doubao-search-actions">
+                            <button id="startBingSearch" class="doubao-search-btn doubao-search-btn-confirm">开始搜索</button>
+                            <button id="cancelBingSearch" class="doubao-search-btn doubao-search-btn-cancel">取消</button>
+                        </div>
+                    </div>
+                    <div id="bingSearchFrameContainer" class="doubao-search-frame-container" style="display: none;">
+                        <iframe id="bingSearchFrame" class="doubao-search-frame" 
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有道搜索modal -->
+        <div id="youdaoSearchModal" class="doubao-search-modal">
+            <div class="doubao-search-modal-content">
+                <div class="doubao-search-modal-header">
+                    <div class="doubao-search-modal-title">
+                        <span class="doubao-icon">📖</span>
+                        有道词典
+                    </div>
+                    <div class="doubao-search-controls">
+                        <span id="youdaoSearchStatus" class="doubao-search-status"></span>
+                        <button id="closeYoudaoSearchModal" class="doubao-search-modal-close">×</button>
+                    </div>
+                </div>
+                <div class="doubao-search-modal-body">
+                    <div id="youdaoSearchInitial" class="doubao-search-initial">
+                        <div class="doubao-search-selected-text">
+                            <div class="doubao-search-label">搜索关键词：</div>
+                            <div id="youdaoSelectedText" class="doubao-search-text"></div>
+                        </div>
+                        <div class="doubao-search-auto-text">
+                            <div style="text-align: center; color: #4f46e5; font-weight: 500; margin-bottom: 10px;">
+                                📖 正在自动搜索中...
+                            </div>
+                            <div style="text-align: center; color: #6b7280; font-size: 0.9rem;">
+                                或者点击按钮手动开始搜索
+                            </div>
+                        </div>
+                        <div class="doubao-search-actions">
+                            <button id="startYoudaoSearch" class="doubao-search-btn doubao-search-btn-confirm">开始搜索</button>
+                            <button id="cancelYoudaoSearch" class="doubao-search-btn doubao-search-btn-cancel">取消</button>
+                        </div>
+                    </div>
+                    <div id="youdaoSearchFrameContainer" class="doubao-search-frame-container" style="display: none;">
+                        <iframe id="youdaoSearchFrame" class="doubao-search-frame" 
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜狗搜索modal -->
+        <div id="sougouSearchModal" class="doubao-search-modal">
+            <div class="doubao-search-modal-content">
+                <div class="doubao-search-modal-header">
+                    <div class="doubao-search-modal-title">
+                        <span class="doubao-icon">📑</span>
+                        搜狗翻译
+                    </div>
+                    <div class="doubao-search-controls">
+                        <span id="sougouSearchStatus" class="doubao-search-status"></span>
+                        <button id="closeSougouSearchModal" class="doubao-search-modal-close">×</button>
+                    </div>
+                </div>
+                <div class="doubao-search-modal-body">
+                    <div id="sougouSearchInitial" class="doubao-search-initial">
+                        <div class="doubao-search-selected-text">
+                            <div class="doubao-search-label">搜索关键词：</div>
+                            <div id="sougouSelectedText" class="doubao-search-text"></div>
+                        </div>
+                        <div class="doubao-search-auto-text">
+                            <div style="text-align: center; color: #4f46e5; font-weight: 500; margin-bottom: 10px;">
+                                📑 正在自动搜索中...
+                            </div>
+                            <div style="text-align: center; color: #6b7280; font-size: 0.9rem;">
+                                或者点击按钮手动开始搜索
+                            </div>
+                        </div>
+                        <div class="doubao-search-actions">
+                            <button id="startSougouSearch" class="doubao-search-btn doubao-search-btn-confirm">开始搜索</button>
+                            <button id="cancelSougouSearch" class="doubao-search-btn doubao-search-btn-cancel">取消</button>
+                        </div>
+                    </div>
+                    <div id="sougouSearchFrameContainer" class="doubao-search-frame-container" style="display: none;">
+                        <iframe id="sougouSearchFrame" class="doubao-search-frame" 
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-group">
+                <label class="setting-label">背诵模式</label>
+                <select class="setting-control" id="studyMode">
+                    <option value="random">随机背诵</option>
+                    <option value="sequential">顺序背诵</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">新卡片数量限制</label>
+                <input type="number" class="setting-control" id="newCardLimit" min="5" max="50" value="20">
+            </div>
+            <div class="setting-group">
+                <button class="btn btn-primary" onclick="applySettings()">应用设置</button>
+                <button class="btn btn-secondary" onclick="toggleSettings()">取消</button>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-info">
+                <div class="progress-stats">
+                    <div class="progress-item">
+                        <div class="progress-number" id="reviewCount">0</div>
+                        <div class="progress-label">复习卡片</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-number" id="forgotCount" style="color: #dc3545;">0</div>
+                        <div class="progress-label">本轮忘记</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-number" id="newCount">0</div>
+                        <div class="progress-label">新卡片</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-number" id="completedCount">0</div>
+                        <div class="progress-label">已完成</div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-number" id="remainingCount">0</div>
+                    <div class="progress-label">剩余</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="card-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-face card-front">
+                    <div class="card-tags" id="cardTags"></div>
+                    <div class="card-content" id="cardFront"></div>
+                    <!-- <div class="card-subtitle">点击"查看答案"显示背面内容</div> -->
+                    <div class="flip-hint">💡 思考后点击按钮查看答案</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-tags" id="cardBackTags"></div>
+                    <div class="card-back-content" id="cardBack"></div>
+                    <!-- <div class="card-subtitle">根据掌握程度选择按钮</div> -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="answer-section">
+                <div class="difficulty-buttons" id="difficultyButtons">
+                    <button class="btn-difficulty btn-forgot" onclick="answerCard('forgot')">😵 忘记</button>
+                    <button class="btn-difficulty btn-hard" onclick="answerCard('hard')">🤔 模糊</button>
+                    <button class="btn-difficulty btn-good" onclick="answerCard('good')">😊 记住</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-action" onclick="skipCard()">⏭️ 跳过</button>
+                <button class="btn-action" onclick="previousCard()">⬅️ 上一张</button>
+                <button class="btn-action" onclick="nextCard()">➡️ 下一张</button>
+                <button class="btn-action" onclick="shuffleCards()">🔀 打乱</button>
+            </div>
+        </div>
+
+        <div class="study-complete" id="studyComplete">
+            <div class="complete-icon">🎉</div>
+            <div class="complete-title">今日背诵完成！</div>
+            <div class="complete-stats">
+                <div class="complete-stat">
+                    <div class="complete-number" id="completedReview">0</div>
+                    <div class="complete-label">复习完成</div>
+                </div>
+                <div class="complete-stat">
+                    <div class="complete-number" id="completedNew">0</div>
+                    <div class="complete-label">新词学习</div>
+                </div>
+                <div class="complete-stat">
+                    <div class="complete-number" id="studyTime">0</div>
+                    <div class="complete-label">学习时长(分)</div>
+                </div>
+            </div>
+            <div class="complete-actions">
+                <button class="btn btn-primary" onclick="continueStudying()">继续学习</button>
+                <button class="btn btn-secondary" onclick="backToHome()">返回首页</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 间隔重复算法类
+        class SpacedRepetitionAlgorithm {
+            constructor() {
+                // 阶段定义
+                this.STAGES = {
+                    LEARNING: 'learning',
+                    REVIEW: 'review', 
+                    MATURE: 'mature'
+                };
+                
+                // 阶段阈值
+                this.REVIEW_THRESHOLD = 3; // 完成3次复习后进入复习阶段
+                this.MATURE_THRESHOLD = 3; // 连续3次记住后进入成熟阶段
+            }
+
+            // 获取卡片当前阶段
+            getCardStage(card) {
+                if (card.stage) {
+                    return card.stage;
+                }
+                
+                // 根据复习次数和掌握度判断阶段
+                if (card.reviewCount < this.REVIEW_THRESHOLD && card.mastery === 0) {
+                    return this.STAGES.LEARNING;
+                } else if (card.mastery < this.MATURE_THRESHOLD) {
+                    return this.STAGES.REVIEW;
+                } else {
+                    return this.STAGES.MATURE;
+                }
+            }
+
+            // 计算下次复习时间
+            calculateNextReview(currentCard, answer) {
+                const now = new Date();
+                
+                // 获取当前卡片阶段和间隔
+                const currentStage = this.getCardStage(currentCard);
+                let currentInterval = currentCard.interval || 0;
+                
+                // 计算下次复习间隔
+                let nextInterval = this.calculateInterval(currentStage, currentInterval, answer, currentCard);
+                
+                // 确定下次复习时间
+                let nextReview = new Date(now.getTime() + nextInterval * 24 * 60 * 60 * 1000);
+                
+                // 更新卡片阶段和掌握度
+                let newStage = this.determineNextStage(currentStage, answer, currentCard);
+                let newMastery = this.calculateMastery(currentStage, answer, currentCard);
+                
+                // 检查是否逾期
+                if (currentCard.lastReview && currentCard.interval) {
+                    const lastReviewDate = new Date(currentCard.lastReview);
+                    const expectedReviewDate = new Date(lastReviewDate.getTime() + currentCard.interval * 24 * 60 * 60 * 1000);
+                    const overdueDays = (now - expectedReviewDate) / (24 * 60 * 60 * 1000);
+                    
+                    if (overdueDays > currentInterval) {
+                        // 逾期超过当前间隔1倍，调整间隔
+                        nextInterval = Math.floor(currentInterval * 0.3);
+                        if (nextInterval < 0) nextInterval = 0;
+                        nextReview = new Date(now.getTime() + nextInterval * 24 * 60 * 60 * 1000);
+                    }
+                }
+                
+                return {
+                    mastery: newMastery,
+                    stage: newStage,
+                    interval: nextInterval,
+                    nextReview: nextReview.toDateString(),
+                    reviewCount: currentCard.reviewCount + 1,
+                    lastReview: now.toDateString(),
+                    easeFactor: currentCard.easeFactor || 2.5 // 默认 ease factor
+                };
+            }
+            
+            // 计算新的间隔
+            calculateInterval(stage, currentInterval, answer, card) {
+                let newInterval;
+                
+                switch (answer) {
+                    case 'forgot':
+                        // 忘记：重置间隔
+                        if (stage === this.STAGES.LEARNING) {
+                            newInterval = 0; // 立即复习
+                        } else {
+                            // 回到学习阶段，重置间隔
+                            newInterval = 0;
+                        }
+                        break;
+                    
+                    case 'hard': // 模糊
+                        // 当前间隔×0.5（向下取整）
+                        newInterval = Math.max(0, Math.floor(currentInterval * 0.5));
+                        break;
+                    
+                    case 'good': // 记住
+                        // 当前间隔×对应阶段系数
+                        let factor;
+                        if (stage === this.STAGES.LEARNING) {
+                            factor = 1.5; // 学习阶段系数1.5-2.0
+                        } else if (stage === this.STAGES.REVIEW) {
+                            factor = 2.0; // 复习阶段系数2.0-2.5
+                        } else { // MATURE
+                            factor = 2.5; // 成熟阶段系数2.5-3.0
+                        }
+                        
+                        // 考虑难度系数
+                        const difficultyFactor = card.difficultyFactor || 1.8;
+                        newInterval = currentInterval === 0 ? 
+                            (stage === this.STAGES.LEARNING ? 0.1 : 1) : // 初始间隔
+                            currentInterval * factor * difficultyFactor;
+                        
+                        newInterval = Math.round(newInterval * 10) / 10; // 保留一位小数
+                        break;
+                }
+                
+                return newInterval;
+            }
+            
+            // 确定下一阶段
+            determineNextStage(currentStage, answer, card) {
+                // 如果标记为忘记，退回到学习阶段
+                if (answer === 'forgot') {
+                    return this.STAGES.LEARNING;
+                }
+                
+                // 检查是否满足进入下一阶段的条件
+                if (currentStage === this.STAGES.LEARNING && card.reviewCount + 1 >= this.REVIEW_THRESHOLD) {
+                    return this.STAGES.REVIEW;
+                }
+                
+                if (currentStage === this.STAGES.REVIEW && card.mastery >= this.MATURE_THRESHOLD) {
+                    // 检查最近几次是否都是"记住"
+                    if (card.successiveGoodCount >= this.MATURE_THRESHOLD) {
+                        return this.STAGES.MATURE;
+                    }
+                }
+                
+                return currentStage;
+            }
+            
+            // 计算新的掌握度
+            calculateMastery(stage, answer, card) {
+                if (answer === 'forgot') {
+                    // 如果忘记，重置掌握度（学习阶段）或降低掌握度（其他阶段）
+                    if (stage === this.STAGES.LEARNING) {
+                        return 0;
+                    } else {
+                        return Math.max(0, card.mastery - 1);
+                    }
+                } else if (answer === 'good') {
+                    // 记住则增加掌握度
+                    return card.mastery + 1;
+                } else {
+                    // 模糊则保持当前掌握度
+                    return card.mastery;
+                }
+            }
+        }
+
+        // 数据管理器
+        class StudyDataManager {
+            constructor() {
+                this.storageKey = 'toeic_memorization_data';
+                this.sessionKey = 'current_study_session';
+            }
+
+            getData() {
+                return JSON.parse(localStorage.getItem(this.storageKey));
+            }
+
+            saveData(data) {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
+
+            getCurrentSession() {
+                const session = localStorage.getItem(this.sessionKey);
+                return session ? JSON.parse(session) : null;
+            }
+
+            saveSession(session) {
+                localStorage.setItem(this.sessionKey, JSON.stringify(session));
+            }
+
+            clearSession() {
+                localStorage.removeItem(this.sessionKey);
+            }
+
+            getTodayStudyCards() {
+                const data = this.getData();
+                const today = new Date().toDateString();
+                const reviewCards = [];
+                const newCards = [];
+
+                data.cards.forEach(card => {
+                    if (card.nextReview === today) {
+                        reviewCards.push(card);
+                    } else if (card.mastery === 0 && card.nextReview === null) {
+                        newCards.push(card);
+                    }
+                });
+
+                return {
+                    reviewCards,
+                    newCards: newCards.slice(0, data.settings.dailyNewCards || 20)
+                };
+            }
+
+            updateCardProgress(cardId, progress) {
+                const data = this.getData();
+                const cardIndex = data.cards.findIndex(card => card.id === cardId);
+                
+                if (cardIndex !== -1) {
+                    data.cards[cardIndex] = { ...data.cards[cardIndex], ...progress };
+                    this.saveData(data);
+                }
+            }
+
+            getStudyStatistics() {
+                const session = this.getCurrentSession();
+                if (!session) return null;
+
+                const startTime = new Date(session.startTime);
+                const currentTime = new Date();
+                const studyTime = Math.round((currentTime - startTime) / 60000); // 分钟
+
+                return {
+                    completedReview: session.completedReview || 0,
+                    completedNew: session.completedNew || 0,
+                    studyTime: studyTime,
+                    totalCards: session.cards.length,
+                    currentIndex: session.currentIndex || 0
+                };
+            }
+        }
+
+        // 全局变量
+        const studyManager = new StudyDataManager();
+        const srsAlgorithm = new SpacedRepetitionAlgorithm();
+        let currentSession = null;
+        let currentCard = null;
+        let isAnswerShown = false;
+        let studyStartTime = null;
+        // 忘记单词队列，存储忘记的单词和加入时间
+        let forgotQueue = [];
+
+        // 页面初始化
+        // 日志函数
+        function log(message) {
+            console.log(`[Study] ${message}`);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStudy();
+        });
+
+        // 初始化学习会话
+        function initializeStudy() {
+            // 检查是否有进行中的会话
+            const savedSession = studyManager.getCurrentSession();
+            
+            if (savedSession) {
+                if (confirm('检测到上次未完成的学习会话，是否继续？')) {
+                    currentSession = savedSession;
+                    // 确保忘记统计存在
+                    if (!currentSession.forgotCount) {
+                        currentSession.forgotCount = 0;
+                    }
+                } else {
+                    studyManager.clearSession();
+                    createNewSession();
+                }
+            } else {
+                createNewSession();
+            }
+
+            if (currentSession && currentSession.cards.length > 0) {
+                studyStartTime = new Date();
+                showCard();
+                updateProgress();
+            } else {
+                showCompleteScreen();
+            }
+        }
+
+        // 创建新会话
+        function createNewSession() {
+            const todayCards = studyManager.getTodayStudyCards();
+            const allCards = [...todayCards.reviewCards, ...todayCards.newCards];
+            
+            // 随机打乱卡片顺序
+            const shuffledCards = shuffleArray(allCards);
+            
+            currentSession = {
+                cards: shuffledCards,
+                currentIndex: 0,
+                startTime: new Date().toISOString(),
+                completedReview: 0,
+                completedNew: 0,
+                skippedCards: [],
+                forgotCount: 0 // 本轮忘记计数
+            };
+
+            studyManager.saveSession(currentSession);
+        }
+
+        // 显示当前卡片
+        function showCard() {
+            // 检查忘记队列中是否有超过1分钟的单词
+            const now = new Date().getTime();
+            const ONE_MINUTE = 60 * 1000; // 1分钟的毫秒数
+            
+            // 先过滤出所有超过1分钟的忘记卡片
+            const expiredForgotCards = forgotQueue.filter(card => (now - card.addedTime) >= ONE_MINUTE);
+            
+            if (expiredForgotCards.length > 0) {
+                // 按照添加时间排序（最早的优先）
+                expiredForgotCards.sort((a, b) => a.addedTime - b.addedTime);
+                
+                // 显示最早添加的卡片
+                currentCard = expiredForgotCards[0];
+                
+                // 从忘记队列中移除该单词
+                const cardIndex = forgotQueue.findIndex(card => card.id === currentCard.id);
+                if (cardIndex !== -1) {
+                    forgotQueue.splice(cardIndex, 1);
+                }
+                
+                // 不增加currentIndex，因为是从忘记队列取的卡片
+            } else {
+                // 如果没有超过1分钟的忘记单词，正常显示当前索引的卡片
+                if (!currentSession || currentSession.currentIndex >= currentSession.cards.length) {
+                    // 主队列已结束，将忘记队列作为主队列使用
+                    if (forgotQueue.length > 0) {
+                        // 按照添加时间排序，确保顺序
+                        const sortedForgotQueue = [...forgotQueue].sort((a, b) => a.addedTime - b.addedTime);
+                        
+                        // 显示忘记队列中的第一个（最早的）卡片
+                        currentCard = sortedForgotQueue[0];
+                        
+                        // 从忘记队列中移除该卡片
+                        const cardIndex = forgotQueue.findIndex(card => card.id === currentCard.id);
+                        if (cardIndex !== -1) {
+                            forgotQueue.splice(cardIndex, 1);
+                        }
+                        
+                        // 不增加currentIndex，因为是从忘记队列取的卡片
+                    } else {
+                        showCompleteScreen();
+                        return;
+                    }
+                } else {
+                    currentCard = currentSession.cards[currentSession.currentIndex];
+                }
+            }
+            
+            isAnswerShown = false;
+
+            // 更新卡片显示
+            document.getElementById('cardFront').textContent = currentCard.front;
+            document.getElementById('cardBack').textContent = currentCard.back;
+            
+            // 更新标签
+            const tagsHtml = currentCard.tags.map(tag => `<span class="card-tag">${tag}</span>`).join('');
+            // document.getElementById('cardTags').innerHTML = tagsHtml;
+            document.getElementById('cardBackTags').innerHTML = tagsHtml;
+
+            // 重置卡片状态
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.remove('flipped');
+            
+            // 显示/隐藏按钮
+            document.getElementById('difficultyButtons').classList.remove('show');
+            
+            // 更新忘记计数显示
+            if (currentSession.forgotCount > 0) {
+                document.getElementById('forgotCount').textContent = currentSession.forgotCount;
+            }
+            
+            // Add click event to flip the card only when answer is not shown
+            flashcard.onclick = function() {
+                if (!isAnswerShown) {
+                    showAnswer();
+                }
+            };
+            
+            // Prevent clicking when difficulty buttons are shown
+            const difficultyButtons = document.getElementById('difficultyButtons');
+            if (difficultyButtons) {
+                difficultyButtons.onclick = function(e) {
+                    e.stopPropagation();
+                };
+            }
+        }
+
+        // 显示答案
+        function showAnswer() {
+            isAnswerShown = true;
+            const flashcard = document.getElementById('flashcard');
+            flashcard.classList.add('flipped');
+            
+            document.getElementById('difficultyButtons').classList.add('show');
+        }
+
+        // 回答卡片
+        function answerCard(difficulty) {
+            if (!isAnswerShown || !currentCard) return;
+
+            // 更新卡片进度
+            const progress = srsAlgorithm.calculateNextReview(currentCard, difficulty);
+            studyManager.updateCardProgress(currentCard.id, progress);
+
+            // 处理忘记的特殊逻辑
+            if (difficulty === 'forgot') {
+                // 增加忘记计数
+                currentSession.forgotCount = (currentSession.forgotCount || 0) + 1;
+                
+                // 将当前卡片添加到忘记队列中，记录加入时间
+                const forgotCardCopy = { 
+                    ...currentCard, 
+                    ...progress,
+                    addedTime: new Date().getTime() // 记录加入队列的时间戳
+                };
+                forgotQueue.push(forgotCardCopy);
+                
+                // 更新忘记计数显示
+                document.getElementById('forgotCount').textContent = currentSession.forgotCount;
+                
+                log('忘记卡片已添加到忘记队列，将在1分钟后优先复习');
+            } else {
+                // 如果不是忘记，更新会话统计
+                if (currentCard.nextReview === null) {
+                    currentSession.completedNew++;
+                } else {
+                    currentSession.completedReview++;
+                }
+            }
+
+            // 保存会话
+            studyManager.saveSession(currentSession);
+
+            // 显示下一张卡片
+            nextCard();
+        }
+
+        // 下一张卡片
+        function nextCard() {
+            if (!currentSession) return;
+
+            // Check if we're at the end of the main queue
+            if (currentSession.currentIndex >= currentSession.cards.length) {
+                // We're past the main queue, so don't increment the index further
+                // Just continue with the forgot queue
+                if (forgotQueue.length === 0) {
+                    // Both queues are empty, show completion screen
+                    showCompleteScreen();
+                } else {
+                    // There are still cards in the forgot queue, continue showing cards
+                    // The showCard function will handle showing forgotten cards
+                    showCard();
+                    updateProgress();
+                }
+            } else {
+                // Still in the main queue, increment index and continue
+                currentSession.currentIndex++;
+                studyManager.saveSession(currentSession);
+                showCard();
+                updateProgress();
+            }
+        }
+
+        // 上一张卡片
+        function previousCard() {
+            if (!currentSession || currentSession.currentIndex <= 0) return;
+
+            currentSession.currentIndex--;
+            studyManager.saveSession(currentSession);
+            showCard();
+            updateProgress();
+        }
+
+        // 跳过当前卡片
+        function skipCard() {
+            if (!currentCard) return;
+
+            // 将跳过的卡片添加到会话末尾
+            currentSession.cards.push(currentCard);
+            currentSession.skippedCards.push(currentCard.id);
+            
+            nextCard();
+        }
+
+        // 打乱卡片
+        function shuffleCards() {
+            if (!currentSession) return;
+
+            const currentIndex = currentSession.currentIndex;
+            const remainingCards = currentSession.cards.slice(currentIndex);
+            const shuffledRemaining = shuffleArray(remainingCards);
+            
+            currentSession.cards = [
+                ...currentSession.cards.slice(0, currentIndex),
+                ...shuffledRemaining
+            ];
+            
+            studyManager.saveSession(currentSession);
+            showCard();
+        }
+
+        // 更新进度显示
+        function updateProgress() {
+            if (!currentSession) return;
+
+            const total = currentSession.cards.length;
+            const current = currentSession.currentIndex + 1;
+            const completed = currentSession.completedReview + currentSession.completedNew;
+            const remaining = total - current;
+            const forgotCount = currentSession.forgotCount || 0;
+
+            document.getElementById('reviewCount').textContent = currentSession.completedReview;
+            document.getElementById('newCount').textContent = currentSession.completedNew;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('forgotCount').textContent = forgotCount;
+
+            const progressPercent = total > 0 ? Math.round((current / total) * 100) : 0;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+        }
+
+        // 显示完成屏幕
+        function showCompleteScreen() {
+            const stats = studyManager.getStudyStatistics();
+            
+            document.getElementById('completedReview').textContent = stats.completedReview;
+            document.getElementById('completedNew').textContent = stats.completedNew;
+            document.getElementById('studyTime').textContent = stats.studyTime;
+
+            document.querySelector('.card-container').style.display = 'none';
+            document.querySelector('.controls').style.display = 'none';
+            document.getElementById('studyComplete').classList.add('show');
+
+            // 更新今日完成数
+            const completedToday = parseInt(localStorage.getItem('completedToday') || '0');
+            localStorage.setItem('completedToday', (completedToday + stats.completedReview + stats.completedNew).toString());
+
+            // 保存忘记统计到本地存储
+            if (currentSession && currentSession.forgotCount > 0) {
+                const today = new Date().toDateString();
+                const forgotKey = `forgotCount_${today}`;
+                const existingForgot = parseInt(localStorage.getItem(forgotKey) || '0');
+                localStorage.setItem(forgotKey, (existingForgot + currentSession.forgotCount).toString());
+            }
+
+            // 清除会话
+            studyManager.clearSession();
+        }
+
+        // 继续学习
+        function continueStudying() {
+            // 保存之前的忘记统计
+            const previousForgotCount = currentSession ? currentSession.forgotCount : 0;
+            
+            createNewSession();
+            
+            // 恢复忘记统计
+            if (previousForgotCount > 0) {
+                currentSession.forgotCount = previousForgotCount;
+            }
+            
+            document.querySelector('.card-container').style.display = 'flex';
+            document.querySelector('.controls').style.display = 'block';
+            document.getElementById('studyComplete').classList.remove('show');
+            showCard();
+            updateProgress();
+        }
+
+        // 返回首页
+        function backToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // 暂停学习
+        function pauseStudy() {
+            if (confirm('暂停学习？当前进度将被保存。')) {
+                alert('学习已暂停，进度已保存。');
+            }
+        }
+
+        // 退出学习
+        function exitStudy() {
+            if (confirm('确定要退出学习吗？当前进度将被保存。')) {
+                studyManager.clearSession();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 设置相关函数
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('show');
+        }
+
+        function applySettings() {
+            const studyMode = document.getElementById('studyMode').value;
+            const newCardLimit = parseInt(document.getElementById('newCardLimit').value);
+
+            const data = studyManager.getData();
+            data.settings.studyMode = studyMode;
+            data.settings.dailyNewCards = newCardLimit;
+            studyManager.saveData(data);
+
+            alert('设置已应用');
+            toggleSettings();
+        }
+
+        // 工具函数
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // 搜索功能相关函数
+        function searchWord(engine) {
+            // 获取当前卡片的单词
+            let word = '';
+            
+            // 尝试从当前卡片获取单词
+            const cardContent = document.querySelector('.card-front .card-content');
+            if (cardContent) {
+                word = cardContent.textContent.trim();
+            }
+            
+            // 如果没有获取到单词，尝试从其他可能的位置获取
+            if (!word) {
+                const cardFront = document.querySelector('.card-front');
+                if (cardFront) {
+                    word = cardFront.textContent.trim().split('\n')[0].trim();
+                }
+            }
+            
+            // 如果仍然没有获取到单词，提示用户
+            if (!word) {
+                alert('请先显示一张卡片再进行搜索');
+                return;
+            }
+            
+            // 清理单词内容，只保留英文单词
+            word = word.split('/')[0].trim(); // 移除音标部分
+            
+            executeSearch(engine, word);
+        }
+        
+        // 从popover选择搜索选项
+        function searchWordFromPopover(engine) {
+            // 获取当前卡片的单词
+            let word = '';
+            
+            // 尝试从当前卡片获取单词
+            const cardContent = document.querySelector('.card-front .card-content');
+            if (cardContent) {
+                word = cardContent.textContent.trim();
+            }
+            
+            // 如果没有获取到单词，尝试从其他可能的位置获取
+            if (!word) {
+                const cardFront = document.querySelector('.card-front');
+                if (cardFront) {
+                    word = cardFront.textContent.trim().split('\n')[0].trim();
+                }
+            }
+            
+            // 如果仍然没有获取到单词，提示用户
+            if (!word) {
+                alert('请先显示一张卡片再进行搜索');
+                hideSearchPopover();
+                return;
+            }
+            
+            // 清理单词内容，只保留英文单词
+            word = word.split('/')[0].trim(); // 移除音标部分
+            
+            // 根据引擎类型显示对应的modal
+            switch(engine) {
+                case 'bing':
+                    showBingSearchModal(word);
+                    break;
+                case 'youdao':
+                    showYoudaoSearchModal(word);
+                    break;
+                case 'sougou':
+                    showSougouSearchModal(word);
+                    break;
+                case 'doubao':
+                    showDoubaoSearchModal(word);
+                    break;
+                default:
+                    executeSearch(engine, word);
+            }
+            hideSearchPopover();
+        }
+        
+        // 执行搜索
+        function executeSearch(engine, word) {
+            let searchUrl = '';
+            
+            switch(engine) {
+                case 'bing':
+                    searchUrl = `https://cn.bing.com/dict/search?q=${encodeURIComponent(word)}`;
+                    break;
+                case 'youdao':
+                    searchUrl = `https://dict.youdao.com/result?word=${encodeURIComponent(word)}&lang=en`;
+                    break;
+                case 'sougou':
+                    searchUrl = `https://fanyi.sogou.com/text?keyword=${encodeURIComponent(word)}&transfrom=en&transto=zh-CHS`;
+                    break;
+                case 'doubao':
+                    searchUrl = `https://fanyi.doubao.com/?query=${encodeURIComponent(word)}&source=select`;
+                    break;
+                default:
+                    alert('不支持的搜索引擎');
+                    return;
+            }
+            
+            // 在新窗口中打开搜索结果
+            window.open(searchUrl, '_blank');
+        }
+        
+        // 显示搜索popover
+        function showSearchPopover() {
+            document.getElementById('searchPopover').style.display = 'flex';
+        }
+        
+        // 显示搜索popover
+        function showSearchPopover() {
+            const popover = document.getElementById('searchPopover');
+            popover.style.display = 'block';
+            
+            // 重置popover内容为默认状态
+            const header = popover.querySelector('.search-popover-header span');
+            header.textContent = '🔍 搜索选项';
+            
+            // 获取豆包按钮的位置，显示在按钮下方
+            const doubaoBtn = document.getElementById('doubaoSearchBtn');
+            if (doubaoBtn) {
+                const rect = doubaoBtn.getBoundingClientRect();
+                popover.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                popover.style.left = (rect.left + window.scrollX) + 'px';
+            }
+        }
+        
+        // 显示搜索popover（针对选中文本）
+        function showSearchPopoverForSelection(selectedText) {
+            const popover = document.getElementById('searchPopover');
+            
+            // 更新popover标题为选中的文本
+            const header = popover.querySelector('.search-popover-header span');
+            const displayText = selectedText.length > 20 ? selectedText.substring(0, 20) + '...' : selectedText;
+            header.textContent = `🔍 搜索 `;
+            
+            // 更新popover选项的点击事件，传递选中的文本
+            updatePopoverOptionsWithSelection(selectedText);
+            
+            // 获取选中文本的位置
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                // 计算popover位置，显示在选中文本下方
+                popover.style.display = 'block';
+                popover.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                popover.style.left = (rect.left + window.scrollX) + 'px';
+            }
+        }
+        
+        // 更新popover选项以使用选中的文本
+        function updatePopoverOptionsWithSelection(selectedText) {
+            const options = document.querySelectorAll('.search-popover-option');
+            options[0].onclick = () => searchSelectedWord('bing', selectedText);
+            options[1].onclick = () => searchSelectedWord('youdao', selectedText);
+            options[2].onclick = () => searchSelectedWord('sougou', selectedText);
+        }
+        
+        // 搜索选中的单词
+        function searchSelectedWord(engine, word) {
+            // 根据引擎类型显示对应的modal
+            switch(engine) {
+                case 'bing':
+                    showBingSearchModal(word);
+                    break;
+                case 'youdao':
+                    showYoudaoSearchModal(word);
+                    break;
+                case 'sougou':
+                    showSougouSearchModal(word);
+                    break;
+                case 'doubao':
+                    showDoubaoSearchModal(word);
+                    break;
+                default:
+                    executeSearch(engine, word);
+            }
+            hideSearchPopover();
+        }
+        
+        // 隐藏搜索popover
+        function hideSearchPopover() {
+            document.getElementById('searchPopover').style.display = 'none';
+            // 清除文本选中状态
+            window.getSelection().removeAllRanges();
+        }
+        
+        // 监听文本选择事件
+        document.addEventListener('mouseup', function() {
+            const selectedText = window.getSelection().toString().trim();
+            if (selectedText) {
+                // 延迟执行，确保选择完成
+                setTimeout(() => {
+                    showSearchPopoverForSelection(selectedText);
+                }, 100);
+            }
+        });
+        
+        // 豆包首页modal相关函数
+        const doubaoHomeModal = document.getElementById('doubaoHomeModal');
+        const closeDoubaoHomeModal = document.getElementById('closeDoubaoHomeModal');
+        
+        function showDoubaoHomeModal() {
+            doubaoHomeModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+        
+        function closeDoubaoHomeModalFunc() {
+            doubaoHomeModal.classList.remove('active');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+        
+        // 豆包首页按钮事件监听
+        const doubaoHomeBtn = document.getElementById('doubaoHomeBtn');
+        doubaoHomeBtn.addEventListener('click', showDoubaoHomeModal);
+        closeDoubaoHomeModal.addEventListener('click', closeDoubaoHomeModalFunc);
+        
+        // 点击模态框背景关闭
+        doubaoHomeModal.addEventListener('click', function(e) {
+            if (e.target === doubaoHomeModal && doubaoHomeModal.classList.contains('active')) {
+                closeDoubaoHomeModalFunc();
+            }
+        });
+        
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && doubaoHomeModal.classList.contains('active')) {
+                closeDoubaoHomeModalFunc();
+            }
+        });
+        
+        // 点击页面其他地方隐藏popover
+        document.addEventListener('click', function(event) {
+            const popover = document.getElementById('searchPopover');
+            const doubaoBtn = document.getElementById('doubaoHomeBtn');
+            
+            if (popover.style.display === 'block' && 
+                !popover.contains(event.target) && 
+                !doubaoBtn.contains(event.target)) {
+                hideSearchPopover();
+            }
+        });
+
+        // 搜索modal相关函数
+        // Bing搜索modal
+        function showBingSearchModal(word) {
+            const bingSearchModal = document.getElementById('bingSearchModal');
+            const bingSelectedText = document.getElementById('bingSelectedText');
+            
+            bingSelectedText.textContent = word;
+            bingSearchModal.classList.add('active');
+            
+            // 自动搜索延迟300ms，让模态框动画完成
+            setTimeout(() => {
+                startBingSearchFunc();
+            }, 300);
+        }
+        
+        function startBingSearchFunc() {
+            const searchText = document.getElementById('bingSelectedText').textContent;
+            const bingSearchFrame = document.getElementById('bingSearchFrame');
+            const bingSearchFrameContainer = document.getElementById('bingSearchFrameContainer');
+            const bingSearchInitial = document.getElementById('bingSearchInitial');
+            const bingSearchStatus = document.getElementById('bingSearchStatus');
+            
+            if (searchText && searchText.length > 0) {
+                // 切换到iframe视图
+                bingSearchInitial.style.display = 'none';
+                bingSearchFrameContainer.style.display = 'block';
+                
+                // 构建Bing搜索URL
+                const encodedText = encodeURIComponent(searchText);
+                const searchUrl = `https://cn.bing.com/dict/search?q=${encodedText}`;
+                
+                // 设置状态文本
+                bingSearchStatus.textContent = `正在搜索: ${searchText}`;
+                
+                // 加载搜索页面
+                bingSearchFrame.src = searchUrl;
+            }
+        }
+        
+        // 有道搜索modal
+        function showYoudaoSearchModal(word) {
+            const youdaoSearchModal = document.getElementById('youdaoSearchModal');
+            const youdaoSelectedText = document.getElementById('youdaoSelectedText');
+            
+            youdaoSelectedText.textContent = word;
+            youdaoSearchModal.classList.add('active');
+            
+            // 自动搜索延迟300ms，让模态框动画完成
+            setTimeout(() => {
+                startYoudaoSearchFunc();
+            }, 300);
+        }
+        
+        function startYoudaoSearchFunc() {
+            const searchText = document.getElementById('youdaoSelectedText').textContent;
+            const youdaoSearchFrame = document.getElementById('youdaoSearchFrame');
+            const youdaoSearchFrameContainer = document.getElementById('youdaoSearchFrameContainer');
+            const youdaoSearchInitial = document.getElementById('youdaoSearchInitial');
+            const youdaoSearchStatus = document.getElementById('youdaoSearchStatus');
+            
+            if (searchText && searchText.length > 0) {
+                // 切换到iframe视图
+                youdaoSearchInitial.style.display = 'none';
+                youdaoSearchFrameContainer.style.display = 'block';
+                
+                // 构建有道搜索URL
+                const encodedText = encodeURIComponent(searchText);
+                const searchUrl = `https://dict.youdao.com/result?word=${encodedText}&lang=en`;
+                
+                // 设置状态文本
+                youdaoSearchStatus.textContent = `正在搜索: ${searchText}`;
+                
+                // 加载搜索页面
+                youdaoSearchFrame.src = searchUrl;
+            }
+        }
+        
+        // 搜狗搜索modal
+        function showSougouSearchModal(word) {
+            const sougouSearchModal = document.getElementById('sougouSearchModal');
+            const sougouSelectedText = document.getElementById('sougouSelectedText');
+            
+            sougouSelectedText.textContent = word;
+            sougouSearchModal.classList.add('active');
+            
+            // 自动搜索延迟300ms，让模态框动画完成
+            setTimeout(() => {
+                startSougouSearchFunc();
+            }, 300);
+        }
+        
+        function startSougouSearchFunc() {
+            const searchText = document.getElementById('sougouSelectedText').textContent;
+            const sougouSearchFrame = document.getElementById('sougouSearchFrame');
+            const sougouSearchFrameContainer = document.getElementById('sougouSearchFrameContainer');
+            const sougouSearchInitial = document.getElementById('sougouSearchInitial');
+            const sougouSearchStatus = document.getElementById('sougouSearchStatus');
+            
+            if (searchText && searchText.length > 0) {
+                // 切换到iframe视图
+                sougouSearchInitial.style.display = 'none';
+                sougouSearchFrameContainer.style.display = 'block';
+                
+                // 构建搜狗搜索URL
+                const encodedText = encodeURIComponent(searchText);
+                const searchUrl = `https://fanyi.sogou.com/text?keyword=${encodedText}&transfrom=en&transto=zh-CHS`;
+                
+                // 设置状态文本
+                sougouSearchStatus.textContent = `正在搜索: ${searchText}`;
+                
+                // 加载搜索页面
+                sougouSearchFrame.src = searchUrl;
+            }
+        }
+        
+        // 豆包搜索modal（使用toeicIndex.html的逻辑）
+        function showDoubaoSearchModal(word) {
+            const sougouSearchModal = document.getElementById('sougouSearchModal');
+            const sougouSelectedText = document.getElementById('sougouSelectedText');
+            
+            sougouSelectedText.textContent = word;
+            sougouSearchModal.classList.add('active');
+            
+            // 自动搜索延迟300ms，让模态框动画完成
+            setTimeout(() => {
+                startSougouSearchFunc();
+            }, 300);
+        }
+        
+        // 搜索modal关闭函数
+        function closeSearchModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            
+            // 重置到初始状态
+            const initial = modal.querySelector('.doubao-search-initial');
+            const frameContainer = modal.querySelector('.doubao-search-frame-container');
+            const frame = modal.querySelector('.doubao-search-frame');
+            const status = modal.querySelector('.doubao-search-status');
+            
+            if (initial) initial.style.display = 'block';
+            if (frameContainer) frameContainer.style.display = 'none';
+            if (frame) frame.src = '';
+            if (status) status.textContent = '';
+        }
+        
+        // 添加搜索modal事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bing搜索modal事件
+            const closeBingSearchModal = document.getElementById('closeBingSearchModal');
+            const cancelBingSearch = document.getElementById('cancelBingSearch');
+            const startBingSearch = document.getElementById('startBingSearch');
+            
+            if (closeBingSearchModal) {
+                closeBingSearchModal.addEventListener('click', () => closeSearchModal('bingSearchModal'));
+            }
+            if (cancelBingSearch) {
+                cancelBingSearch.addEventListener('click', () => closeSearchModal('bingSearchModal'));
+            }
+            if (startBingSearch) {
+                startBingSearch.addEventListener('click', startBingSearchFunc);
+            }
+            
+            // 有道搜索modal事件
+            const closeYoudaoSearchModal = document.getElementById('closeYoudaoSearchModal');
+            const cancelYoudaoSearch = document.getElementById('cancelYoudaoSearch');
+            const startYoudaoSearch = document.getElementById('startYoudaoSearch');
+            
+            if (closeYoudaoSearchModal) {
+                closeYoudaoSearchModal.addEventListener('click', () => closeSearchModal('youdaoSearchModal'));
+            }
+            if (cancelYoudaoSearch) {
+                cancelYoudaoSearch.addEventListener('click', () => closeSearchModal('youdaoSearchModal'));
+            }
+            if (startYoudaoSearch) {
+                startYoudaoSearch.addEventListener('click', startYoudaoSearchFunc);
+            }
+            
+            // 搜狗搜索modal事件
+            const closeSougouSearchModal = document.getElementById('closeSougouSearchModal');
+            const cancelSougouSearch = document.getElementById('cancelSougouSearch');
+            const startSougouSearch = document.getElementById('startSougouSearch');
+            
+            if (closeSougouSearchModal) {
+                closeSougouSearchModal.addEventListener('click', () => closeSearchModal('sougouSearchModal'));
+            }
+            if (cancelSougouSearch) {
+                cancelSougouSearch.addEventListener('click', () => closeSearchModal('sougouSearchModal'));
+            }
+            if (startSougouSearch) {
+                startSougouSearch.addEventListener('click', startSougouSearchFunc);
+            }
+            
+            // 点击模态框背景关闭
+            const searchModals = ['bingSearchModal', 'youdaoSearchModal', 'sougouSearchModal'];
+            searchModals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal && modal.classList.contains('active')) {
+                            closeSearchModal(modalId);
+                        }
+                    });
+                }
+            });
+            
+            // ESC键关闭搜索模态框
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const activeModals = document.querySelectorAll('.doubao-search-modal.active');
+                    activeModals.forEach(modal => {
+                        closeSearchModal(modal.id);
+                    });
+                }
+            });
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('studyComplete').classList.contains('show')) return;
+
+            switch (e.key) {
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    if (!isAnswerShown) {
+                        showAnswer();
+                    }
+                    break;
+                case '1':
+                    if (isAnswerShown) answerCard('forgot');
+                    break;
+                case '2':
+                    if (isAnswerShown) answerCard('hard');
+                    break;
+                case '3':
+                    if (isAnswerShown) answerCard('good');
+                    break;
+                case 'ArrowRight':
+                    nextCard();
+                    break;
+                case 'ArrowLeft':
+                    previousCard();
+                    break;
+                case 's':
+                    skipCard();
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

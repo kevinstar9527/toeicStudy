@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC 背诵模式 - Anki风格</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin: 40px 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 600px;
+            min-height: 250px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #e3f2fd;
+        }
+
+        .question {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .answer {
+            font-size: 20px;
+            color: #27ae60;
+            line-height: 1.6;
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn-easy {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-good {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-hard {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-again {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .card-counter {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .card {
+                min-height: 200px;
+                padding: 20px;
+            }
+            
+            .question {
+                font-size: 20px;
+            }
+            
+            .answer {
+                font-size: 18px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='toeicIndex.html'">← 返回主页</button>
+            <h1>TOEIC 背诵模式</h1>
+            <div class="stats">
+                <div>已学习: <span id="studiedCount">0</span></div>
+                <div>剩余: <span id="remainingCount">0</span></div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>正在加载学习内容...</p>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>📚 暂无学习内容</h3>
+            <p>请先添加一些TOEIC词汇或短语到学习列表中</p>
+        </div>
+
+        <div id="studyArea" style="display: none;">
+            <div class="card-counter" id="cardCounter">1/10</div>
+            <div class="card-container">
+                <div class="card" id="studyCard">
+                    <div class="card-front">
+                        <div class="question" id="cardQuestion">Loading...</div>
+                        <div class="flip-hint">点击查看答案</div>
+                    </div>
+                    <div class="card-back">
+                        <div class="answer" id="cardAnswer">Loading...</div>
+                        <div class="flip-hint">点击返回问题</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls" id="answerControls" style="display: none;">
+                <button class="btn btn-again" onclick="handleAnswer('again')">🔄 重来</button>
+                <button class="btn btn-hard" onclick="handleAnswer('hard')">😰 困难</button>
+                <button class="btn btn-good" onclick="handleAnswer('good')">😊 良好</button>
+                <button class="btn btn-easy" onclick="handleAnswer('easy')">🎯 简单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Spaced repetition algorithm (SM-2 simplified)
+        class SpacedRepetition {
+            constructor() {
+                this.studyItems = [];
+                this.currentIndex = 0;
+                this.studiedCount = 0;
+                this.loadData();
+            }
+
+            loadData() {
+                // 首先检查是否有从主页面传递的课程数据
+                const courseData = sessionStorage.getItem('currentCourseData');
+                if (courseData) {
+                    // 使用从主页面传递的课程数据
+                    const parsedData = JSON.parse(courseData);
+                    this.studyItems = parsedData.cards;
+                    // 显示当前课程名称
+                    const courseNameElement = document.createElement('div');
+                    courseNameElement.style.cssText = 'position: absolute; top: 15px; left: 20px; background: #667eea; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;';
+                    courseNameElement.textContent = parsedData.courseName;
+                    document.querySelector('.container').appendChild(courseNameElement);
+                    // 清除sessionStorage中的数据，避免重复加载
+                    sessionStorage.removeItem('currentCourseData');
+                    return;
+                }
+
+                // 如果没有课程数据，检查本地存储的学习数据
+                const savedData = localStorage.getItem('toeicStudyData');
+                if (savedData) {
+                    this.studyItems = JSON.parse(savedData);
+                } else {
+                    // Default TOEIC vocabulary data - 扩展版
+                    this.studyItems = [
+                        // A系列
+                        {
+                            question: "abundant",
+                            answer: "丰富的，充裕的 (abundant resources: 丰富的资源)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "accomplish",
+                            answer: "完成，实现 (accomplish a goal: 实现目标)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "accurate",
+                            answer: "准确的，精确的 (accurate information: 准确的信息)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "adapt",
+                            answer: "适应，调整 (adapt to changes: 适应变化)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "adequate",
+                            answer: "足够的，适当的 (adequate preparation: 充分的准备)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "annual",
+                            answer: "年度的，每年的 (annual report: 年度报告)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "appreciate",
+                            answer: "感谢，欣赏，理解 (appreciate your help: 感谢你的帮助)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "approach",
+                            answer: "方法，接近 (a new approach: 新方法)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "assign",
+                            answer: "分配，指派 (assign tasks: 分配任务)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "attend",
+                            answer: "参加，出席 (attend a meeting: 参加会议)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        // B系列
+                        {
+                            question: "benefit",
+                            answer: "好处，利益，受益 (employee benefits: 员工福利)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "budget",
+                            answer: "预算 (annual budget: 年度预算)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "brief",
+                            answer: "简短的，简报 (brief meeting: 简短会议)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "branch",
+                            answer: "分支，分公司 (branch office: 分公司)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "brand",
+                            answer: "品牌 (brand name: 品牌名称)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        // C系列
+                        {
+                            question: "challenge",
+                            answer: "挑战，质疑 (face challenges: 面对挑战)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "client",
+                            answer: "客户 (client satisfaction: 客户满意度)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "committee",
+                            answer: "委员会 (organizing committee: 组织委员会)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "competition",
+                            answer: "竞争，比赛 (market competition: 市场竞争)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "conference",
+                            answer: "会议，研讨会 (business conference: 商务会议)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "contribute",
+                            answer: "贡献，投稿，促成 (contribute to success: 促成成功)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "convenient",
+                            answer: "方便的 (convenient location: 便利的位置)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "cooperate",
+                            answer: "合作 (cooperate with colleagues: 与同事合作)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        // D系列
+                        {
+                            question: "deadline",
+                            answer: "截止日期 (meet deadline: 赶上截止日期)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "delegate",
+                            answer: "委派，代表 (delegate tasks: 委派任务)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "demand",
+                            answer: "需求，要求 (market demand: 市场需求)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "department",
+                            answer: "部门 (sales department: 销售部门)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        // E系列
+                        {
+                            question: "efficient",
+                            answer: "高效的 (efficient process: 高效流程)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "employee",
+                            answer: "员工 (employee benefits: 员工福利)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "establish",
+                            answer: "建立，确立 (establish relationship: 建立关系)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "expand",
+                            answer: "扩展，扩大 (expand business: 扩展业务)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "experience",
+                            answer: "经验，经历 (work experience: 工作经验)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        },
+                        {
+                            question: "expert",
+                            answer: "专家 (industry expert: 行业专家)",
+                            interval: 1,
+                            repetitions: 0,
+                            easeFactor: 2.5,
+                            nextReview: Date.now(),
+                            lastReviewed: null
+                        }
+                    ];
+                    this.saveData();
+                }
+            }
+
+            saveData() {
+                localStorage.setItem('toeicStudyData', JSON.stringify(this.studyItems));
+            }
+
+            getDueItems() {
+                const now = Date.now();
+                return this.studyItems.filter(item => item.nextReview <= now);
+            }
+
+            getCurrentItem() {
+                const dueItems = this.getDueItems();
+                if (dueItems.length === 0) return null;
+                return dueItems[this.currentIndex % dueItems.length];
+            }
+
+            calculateNextReview(quality, item) {
+                // SM-2 algorithm simplified
+                let { interval, repetitions, easeFactor } = item;
+
+                if (quality < 3) {
+                    // "again" or "hard" - reset interval
+                    repetitions = 0;
+                    interval = 1;
+                } else {
+                    // "good" or "easy" - increase interval
+                    if (repetitions === 0) {
+                        interval = 1;
+                    } else if (repetitions === 1) {
+                        interval = 6;
+                    } else {
+                        interval = Math.round(interval * easeFactor);
+                    }
+                    repetitions += 1;
+                }
+
+                // Adjust ease factor based on quality
+                easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+
+                return {
+                    interval,
+                    repetitions,
+                    easeFactor,
+                    nextReview: Date.now() + (interval * 24 * 60 * 60 * 1000),
+                    lastReviewed: Date.now()
+                };
+            }
+
+            answerCurrentItem(quality) {
+                const currentItem = this.getCurrentItem();
+                if (!currentItem) return;
+
+                const updates = this.calculateNextReview(quality, currentItem);
+                Object.assign(currentItem, updates);
+                
+                this.studiedCount++;
+                this.saveData();
+            }
+
+            getStats() {
+                const dueItems = this.getDueItems();
+                const totalItems = this.studyItems.length;
+                const studiedToday = this.studyItems.filter(item => 
+                    item.lastReviewed && 
+                    new Date(item.lastReviewed).toDateString() === new Date().toDateString()
+                ).length;
+
+                return {
+                    total: totalItems,
+                    due: dueItems.length,
+                    studied: studiedToday,
+                    remaining: Math.max(0, dueItems.length - this.studiedCount)
+                };
+            }
+        }
+
+        // Global variables
+        let spacedRepetition;
+        let isFlipped = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            spacedRepetition = new SpacedRepetition();
+            initializeStudySession();
+        });
+
+        function initializeStudySession() {
+            const stats = spacedRepetition.getStats();
+            
+            // Hide loading state
+            document.getElementById('loadingState').style.display = 'none';
+
+            if (stats.due === 0) {
+                // Show empty state
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('studyArea').style.display = 'none';
+            } else {
+                // Show study area
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('studyArea').style.display = 'block';
+                
+                updateStats();
+                showCurrentCard();
+            }
+        }
+
+        function updateStats() {
+            const stats = spacedRepetition.getStats();
+            document.getElementById('studiedCount').textContent = stats.studied;
+            document.getElementById('remainingCount').textContent = stats.remaining;
+            
+            const progress = stats.total > 0 ? (stats.studied / stats.total) * 100 : 0;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showCurrentCard() {
+            const currentItem = spacedRepetition.getCurrentItem();
+            if (!currentItem) {
+                // No more cards to study
+                document.getElementById('studyArea').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('emptyState').innerHTML = `
+                    <h3>🎉 恭喜！</h3>
+                    <p>今天的学习任务已完成，明天再来复习吧！</p>
+                `;
+                return;
+            }
+
+            // Update card content
+            document.getElementById('cardQuestion').textContent = currentItem.question;
+            document.getElementById('cardAnswer').textContent = currentItem.answer;
+
+            // Reset card state
+            isFlipped = false;
+            document.getElementById('studyCard').classList.remove('flipped');
+            document.getElementById('answerControls').style.display = 'none';
+
+            // Update counter
+            const stats = spacedRepetition.getStats();
+            const dueItems = spacedRepetition.getDueItems();
+            const currentIndex = dueItems.indexOf(currentItem) + 1;
+            document.getElementById('cardCounter').textContent = `${currentIndex}/${dueItems.length}`;
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            const card = document.getElementById('studyCard');
+            card.classList.toggle('flipped');
+            
+            // Show answer controls when showing the answer
+            if (isFlipped) {
+                document.getElementById('answerControls').style.display = 'flex';
+            } else {
+                document.getElementById('answerControls').style.display = 'none';
+            }
+        }
+
+        function handleAnswer(quality) {
+            // Convert quality to numeric value for SM-2 algorithm
+            const qualityMap = {
+                'again': 1,    // Complete blackout
+                'hard': 2,     // Incorrect response
+                'good': 3,     // Correct response with difficulty
+                'easy': 4      // Perfect response
+            };
+
+            spacedRepetition.answerCurrentItem(qualityMap[quality]);
+            updateStats();
+            showCurrentCard();
+        }
+
+        // Event listeners
+        document.getElementById('studyCard').addEventListener('click', flipCard);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('studyArea').style.display === 'none') return;
+
+            switch(e.key) {
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    flipCard();
+                    break;
+                case '1':
+                    if (isFlipped) handleAnswer('again');
+                    break;
+                case '2':
+                    if (isFlipped) handleAnswer('hard');
+                    break;
+                case '3':
+                    if (isFlipped) handleAnswer('good');
+                    break;
+                case '4':
+                    if (isFlipped) handleAnswer('easy');
+                    break;
+            }
+        });
+
+        // Add some sample data if no data exists
+        function addSampleData() {
+            const sampleData = [
+                {
+                    question: "benefit",
+                    answer: "好处，利益，受益 (employee benefits: 员工福利)",
+                    interval: 1,
+                    repetitions: 0,
+                    easeFactor: 2.5,
+                    nextReview: Date.now(),
+                    lastReviewed: null
+                },
+                {
+                    question: "challenge",
+                    answer: "挑战，质疑 (face challenges: 面对挑战)",
+                    interval: 1,
+                    repetitions: 0,
+                    easeFactor: 2.5,
+                    nextReview: Date.now(),
+                    lastReviewed: null
+                },
+                {
+                    question: "contribute",
+                    answer: "贡献，投稿，促成 (contribute to success: 促成成功)",
+                    interval: 1,
+                    repetitions: 0,
+                    easeFactor: 2.5,
+                    nextReview: Date.now(),
+                    lastReviewed: null
+                }
+            ];
+
+            const currentData = JSON.parse(localStorage.getItem('toeicStudyData') || '[]');
+            const combinedData = [...currentData, ...sampleData];
+            localStorage.setItem('toeicStudyData', JSON.stringify(combinedData));
+            
+            // Reload the page to show new data
+            location.reload();
+        }
+
+        // Add a button to load sample data if needed
+        if (spacedRepetition && spacedRepetition.getDueItems().length === 0) {
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                const addSampleBtn = document.createElement('button');
+                addSampleBtn.className = 'btn btn-good';
+                addSampleBtn.textContent = '加载示例词汇';
+                addSampleBtn.style.marginTop = '20px';
+                addSampleBtn.onclick = addSampleData;
+                emptyState.appendChild(addSampleBtn);
+            }
+        }
+
+        // 数据管理功能
+        function exportStudyData() {
+            const data = localStorage.getItem('toeicStudyData');
+            if (!data) {
+                alert('暂无学习数据可导出');
+                return;
+            }
+
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `toeic_study_data_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importCourseData() {
+            // 从主页面获取课程数据（需要主页面提供访问接口）
+            if (window.opener && window.opener.toeflVocabData) {
+                const courses = window.opener.toeflVocabData.courses;
+                showCourseSelection(courses);
+            } else {
+                // 如果没有窗口引用，尝试从localStorage获取主页面缓存的课程数据
+                const cachedCourses = localStorage.getItem('cachedCourses');
+                if (cachedCourses) {
+                    const courses = JSON.parse(cachedCourses);
+                    showCourseSelection(courses);
+                } else {
+                    alert('无法获取课程数据，请从主页面选择课程后进入背诵模式');
+                }
+            }
+        }
+
+        function showCourseSelection(courses) {
+            // 创建课程选择模态框
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); z-index: 3000; 
+                display: flex; align-items: center; justify-content: center;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white; padding: 30px; border-radius: 15px; 
+                max-width: 600px; max-height: 80vh; overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            `;
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 20px; text-align: center; color: #333;">📚 选择课程</h3>
+                <div style="margin-bottom: 20px; font-size: 14px; color: #666; text-align: center;">
+                    请选择要导入的课程词汇数据
+                </div>
+                <div id="courseList" style="margin-bottom: 20px;"></div>
+                <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="confirmCourseSelection()" class="btn" style="background: #28a745; color: white;">✅ 确认选择</button>
+                    <button onclick="closeCourseSelection()" class="btn" style="background: #6c757d; color: white;">❌ 取消</button>
+                </div>
+            `;
+
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+
+            // 渲染课程列表
+            const courseList = content.querySelector('#courseList');
+            courses.forEach((course, index) => {
+                const courseItem = document.createElement('div');
+                courseItem.style.cssText = `
+                    padding: 15px; margin: 10px 0; border: 2px solid #e0e0e0; 
+                    border-radius: 10px; cursor: pointer; transition: all 0.3s ease;
+                `;
+                courseItem.innerHTML = `
+                    <div style="font-weight: bold; color: #333;">${course.name}</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                        词汇数量: ${course.vocabs ? course.vocabs.length : 0}
+                    </div>
+                `;
+                
+                courseItem.addEventListener('click', function() {
+                    // 清除其他选中状态
+                    document.querySelectorAll('#courseList > div').forEach(item => {
+                        item.style.borderColor = '#e0e0e0';
+                        item.style.backgroundColor = 'white';
+                    });
+                    // 设置当前选中状态
+                    courseItem.style.borderColor = '#667eea';
+                    courseItem.style.backgroundColor = '#f0f4ff';
+                    courseItem.dataset.courseId = course.id;
+                    courseItem.dataset.courseName = course.name;
+                    courseItem.dataset.vocabCount = course.vocabs ? course.vocabs.length : 0;
+                });
+
+                courseList.appendChild(courseItem);
+            });
+
+            // 保存模态框引用到全局变量
+            window.courseSelectionModal = modal;
+        }
+
+        function confirmCourseSelection() {
+            const selectedCourse = document.querySelector('#courseList > div[style*="#667eea"]');
+            if (!selectedCourse) {
+                alert('请选择一个课程');
+                return;
+            }
+
+            const courseId = selectedCourse.dataset.courseId;
+            const courseName = selectedCourse.dataset.courseName;
+            
+            // 获取课程数据
+            let courses;
+            if (window.opener && window.opener.toeflVocabData) {
+                courses = window.opener.toeflVocabData.courses;
+            } else {
+                const cachedCourses = localStorage.getItem('cachedCourses');
+                courses = JSON.parse(cachedCourses);
+            }
+
+            const selectedCourseData = courses.find(course => course.id === courseId);
+            if (!selectedCourseData || !selectedCourseData.vocabs) {
+                alert('课程数据获取失败');
+                return;
+            }
+
+            // 转换为学习卡片格式
+            const studyCards = selectedCourseData.vocabs.map(vocab => ({
+                question: vocab.word,
+                answer: `${vocab.part} ${vocab.meaning}${vocab.details && vocab.details.collocations ? ' (' + vocab.details.collocations.join(', ') + ')' : ''}${vocab.example ? ' 例: ' + vocab.example.split('→')[1] : ''}`,
+                interval: 1,
+                repetitions: 0,
+                easeFactor: 2.5,
+                nextReview: Date.now(),
+                lastReviewed: null,
+                courseId: courseId,
+                courseName: courseName
+            }));
+
+            // 保存到localStorage
+            localStorage.setItem('toeicStudyData', JSON.stringify(studyCards));
+            
+            closeCourseSelection();
+            alert(`成功导入 ${courseName} 的 ${studyCards.length} 个词汇！`);
+            location.reload();
+        }
+
+        function closeCourseSelection() {
+            if (window.courseSelectionModal) {
+                document.body.removeChild(window.courseSelectionModal);
+                window.courseSelectionModal = null;
+            }
+        }
+
+        function showStudyStatistics() {
+            const data = JSON.parse(localStorage.getItem('toeicStudyData') || '[]');
+            if (data.length === 0) {
+                alert('暂无学习数据');
+                return;
+            }
+
+            const totalCards = data.length;
+            const studiedCards = data.filter(item => item.lastReviewed).length;
+            const dueCards = data.filter(item => item.nextReview <= Date.now()).length;
+            const masteredCards = data.filter(item => item.interval > 21).length; // 间隔超过21天视为掌握
+
+            const stats = `
+📊 TOEIC学习统计
+
+总卡片数: ${totalCards}
+已学习: ${studiedCards}
+待复习: ${dueCards}
+已掌握: ${masteredCards}
+掌握率: ${((masteredCards / totalCards) * 100).toFixed(1)}%
+
+学习建议:
+${dueCards > 0 ? '🔥 有' + dueCards + '张卡片需要复习' : '✅ 今日复习已完成'}
+${masteredCards < totalCards * 0.3 ? '📈 继续加油，掌握率可以提升' : masteredCards < totalCards * 0.7 ? '🎯 进度良好，保持节奏' : '🏆 表现优秀，大部分内容已掌握'}
+            `;
+
+            alert(stats);
+        }
+
+        function resetAllData() {
+            if (confirm('⚠️ 警告：此操作将清除所有学习数据，包括复习进度。是否继续？')) {
+                localStorage.removeItem('toeicStudyData');
+                alert('所有数据已清除');
+                location.reload();
+            }
+        }
+
+        // 添加数据管理按钮到页面
+        function addDataManagementButtons() {
+            const container = document.querySelector('.container');
+            const dataManagementDiv = document.createElement('div');
+            dataManagementDiv.style.cssText = 'margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center;';
+            
+            dataManagementDiv.innerHTML = `
+                <div style="margin-bottom: 15px; font-size: 14px; color: #666;">📊 数据管理</div>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="showStudyStatistics()" style="background: #17a2b8; color: white;">
+                        📈 学习统计
+                    </button>
+                    <button class="btn" onclick="exportStudyData()" style="background: #28a745; color: white;">
+                        💾 导出数据
+                    </button>
+                    <button class="btn" onclick="importCourseData()" style="background: #ffc107; color: #333;">
+                        📁 选择课程
+                    </button>
+                    <button class="btn" onclick="resetAllData()" style="background: #dc3545; color: white;">
+                        🗑️ 重置数据
+                    </button>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                    数据自动保存，支持Anki格式的间隔重复算法
+                </div>
+            `;
+            
+            container.appendChild(dataManagementDiv);
+        }
+
+        // 页面加载完成后添加数据管理功能
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(addDataManagementButtons, 1000); // 延迟添加，确保页面完全加载
+        });
+    </script>
+</body>
+</html>
